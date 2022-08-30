@@ -1,23 +1,23 @@
 """
-WoMa (World Maker)
+WoMa (World Maker)  jy_dev branch
 ====
 
-Create models of rotating (and non-rotating) planets (or stars etc.) by solving
-the differential equations for hydrostatic equilibrium, and/or create initial
-conditions for smoothed particle hydrodynamics (SPH) or any other particle-based
+Create models of rotating (and non-rotating) planets (or stars etc.) by solving 
+the differential equations for hydrostatic equilibrium, and/or create initial 
+conditions for smoothed particle hydrodynamics (SPH) or any other particle-based 
 methods by placing particles to precisely match the planet's profiles.
 
 See README.md and tutorial.ipynb for general documentation and examples.
 
-Presented in Ruiz-Bonilla et al. (2021), MNRAS 500:3.
+Presented in Ruiz-Bonilla et al. (2020), MNRAS..., https://doi.org/...
 
-Includes SEAGen (https://github.com/jkeger/seagen; Kegerreis et al. 2019, MNRAS
+Includes SEAGen (https://github.com/jkeger/seagen; Kegerreis et al. 2019, MNRAS 
 487:4) with modifications for spinning planets.
 
-Sergio Ruiz-Bonilla: sergio.ruiz-bonilla@durham.ac.uk
+Sergio Ruiz-Bonilla: sergio.ruiz-bonilla@durham.ac.uk  
 Jacob Kegerreis: jacob.kegerreis@durham.ac.uk
 
-Visit https://github.com/srbonilla/woma to download the code including examples
+Visit https://github.com/srbonilla/woma to download the code including examples 
 and for support.
 """
 
@@ -254,7 +254,7 @@ class Planet:
         self.v_esc = np.sqrt(2 * gv.G * self.M / self.A1_R_layer[-1])
 
     def update_attributes(self):
-        """Set all planet information after making the profiles."""
+        """ Set all planet information after making the profiles. """
         self.num_prof = len(self.A1_r)
 
         # Reverse profile arrays to be ordered by increasing radius
@@ -283,7 +283,7 @@ class Planet:
         self.M = np.sum(self.A1_M_layer)
 
         # Moment of inertia factor
-        self.I_MR2 = utils.moi(self.A1_r, self.A1_rho) / (self.M * self.R**2)
+        self.I_MR2 = utils.moi(self.A1_r, self.A1_rho) / (self.M * self.R ** 2)
 
         # P, T, and rho at the centre and the outer boundary of each layer
         self.P_0 = self.A1_P[0]
@@ -304,7 +304,7 @@ class Planet:
         self.escape_velocity()
 
     def print_info(self):
-        """Print the main properties."""
+        """ Print the main properties. """
         # Print and catch if any variables are None
         def print_try(string, variables):
             try:
@@ -528,6 +528,13 @@ class Planet:
 
         if verbosity >= 1:
             print("Done")
+
+    def calculate_entropies(self,useU=False):
+        if useU:
+            self.A1_s = eos.A1_s_u_rho(self.A1_u, self.A1_rho, self.A1_mat_id)
+        else:
+            self.A1_s = eos.A1_s_rho_T(self.A1_rho, self.A1_T, self.A1_mat_id)
+            
 
     # ========
     # 1 Layer
@@ -754,7 +761,7 @@ class Planet:
             self.print_info()
 
     def gen_prof_given_inner_prof(
-        self, mat, T_rho_type, rho_min=0, P_min=0, verbosity=1
+        self, mat, T_rho_type, rho_min=0, P_min=0,T_begin=None,alpha=1.0,idgurhop=False,verbosity=1
     ):
         """Add a new layer on top of existing profiles by integrating outwards.
 
@@ -813,7 +820,8 @@ class Planet:
             self.A1_rho = self.A1_rho[::-1]
             self.A1_u = self.A1_u[::-1]
             self.A1_mat_id = self.A1_mat_id[::-1]
-
+        if T_begin == None:
+            T_begin = self.A1_T[-1]
         # Integrate the profiles outwards
         (
             A1_r,
@@ -825,16 +833,17 @@ class Planet:
             A1_mat_id,
         ) = L1_spherical.L1_integrate_out(
             self.A1_r[-1],
-            self.A1_r[1],
+            self.A1_r[1]*alpha,
             self.A1_m_enc[-1],
             self.A1_P[-1],
-            self.A1_T[-1],
+            T_begin,
             self.A1_u[-1],
             self.A1_mat_id_layer[-1],
             self.A1_T_rho_type_id[-1],
             self.A1_T_rho_args[-1],
             rho_min=self.rho_min,
             P_min=self.P_min,
+            idgurhop=idgurhop,
         )
 
         # Apppend the new layer to the full profiles
@@ -2222,7 +2231,7 @@ class SpinPlanet:
             assert self.A1_T_rho_type_id[2] is not None
 
     def _find_boundary_indices(self):
-        """Find the indices of the outermost elements in each layer."""
+        """ Find the indices of the outermost elements in each layer. """
         # First index above each layer
         A1_idx_layer_eq = np.array([np.argmax(self.A1_rho_eq == 0)])
         A1_idx_layer_po = np.array([np.argmax(self.A1_rho_po == 0)])
@@ -2244,7 +2253,7 @@ class SpinPlanet:
         return A1_idx_layer_eq - 1, A1_idx_layer_po - 1
 
     def _update_internal_attributes(self):
-        """Update the attributes required for the internal iterations."""
+        """ Update the attributes required for the internal iterations. """
         self.A1_idx_layer_eq, self.A1_idx_layer_po = self._find_boundary_indices()
 
         # Nested spheroid properties
@@ -2275,7 +2284,7 @@ class SpinPlanet:
             self.A1_M_layer[2:] -= self.A1_M_layer[1]
 
     def update_attributes(self):
-        """Update the attributes for the final output planet."""
+        """ Update the attributes for the final output planet. """
         self._update_internal_attributes()
 
         # Update A1_T_rho_args
@@ -2283,11 +2292,7 @@ class SpinPlanet:
 
         # Escape speed
         self.v_esc_eq, self.v_esc_po = us.spin_escape_vel(
-            self.A1_r_eq,
-            self.A1_rho_eq,
-            self.A1_r_po,
-            self.A1_rho_po,
-            self.period,
+            self.A1_r_eq, self.A1_rho_eq, self.A1_r_po, self.A1_rho_po, self.period,
         )
 
         # Equatorial and polar radii
@@ -2381,16 +2386,16 @@ class SpinPlanet:
         A1_drho = np.append(self.A1_rho, 0)
         A1_drho = A1_drho[:-1] - A1_drho[1:]
 
-        self.I_MR2 = np.sum(8 / 15 * np.pi * A1_drho * self.A1_R**4 * self.A1_Z)
-        self.I_MR2 /= self.M * self.R_eq**2
+        self.I_MR2 = np.sum(8 / 15 * np.pi * A1_drho * self.A1_R ** 4 * self.A1_Z)
+        self.I_MR2 /= self.M * self.R_eq ** 2
 
         # Angular momentum
         hours_to_sec = 60 * 60
         w = 2 * np.pi / self.period / hours_to_sec
-        self.L = self.I_MR2 * self.M * self.R_eq**2 * w
+        self.L = self.I_MR2 * self.M * self.R_eq ** 2 * w
 
     def print_info(self):
-        """Print the main properties."""
+        """ Print the main properties. """
         # Print and catch if any variables are None
         def print_try(string, variables):
             try:
@@ -2499,8 +2504,7 @@ class SpinPlanet:
             (utils.add_whitespace("I_MR2", space), self.I_MR2),
         )
         print_try(
-            "    %s = %.5g  kg m^2 s^-1",
-            (utils.add_whitespace("L", space), self.L),
+            "    %s = %.5g  kg m^2 s^-1", (utils.add_whitespace("L", space), self.L),
         )
 
     def save(self, filename, verbosity=1):
@@ -2890,7 +2894,7 @@ class SpinPlanet:
             try:
                 self.planet.gen_prof_L1_find_M_given_R(M_max=1.2 * M_fixed, verbosity=0)
             except ValueError:
-                M_max = 10 * np.pi * self.planet.R**3 * self.planet.rho_0
+                M_max = 10 * np.pi * self.planet.R ** 3 * self.planet.rho_0
                 self.planet.gen_prof_L1_find_M_given_R(M_max=M_max, verbosity=0)
 
             # Create the spinning profiles
@@ -3034,13 +3038,6 @@ class SpinPlanet:
                     self.print_info()
 
                 return
-
-        # Message that there is no convergence
-        if verbosity >= 1:
-            print(
-                "Convergence not reached."
-                + "\nPlease increase num_attempt_1 or f_iter."
-            )
 
     def _L2_spin_planet_fix_M_bisection(
         self,
@@ -3193,7 +3190,7 @@ class SpinPlanet:
                         M_max=1.2 * M_fixed, verbosity=0
                     )
                 except ValueError:
-                    M_max = 10 * np.pi * self.planet.R**3 * self.planet.rho_0
+                    M_max = 10 * np.pi * self.planet.R ** 3 * self.planet.rho_0
                     self.planet.gen_prof_L2_find_M_given_R_R1(M_max=M_max, verbosity=0)
 
                 # Create the spinning profiles
@@ -3445,13 +3442,6 @@ class SpinPlanet:
                 if np.abs(M_0_discrep) < tol_layer_masses:
                     break
 
-        # Message that there is no convergence
-        if verbosity >= 1:
-            print(
-                "Convergence not reached."
-                + "\nPlease increase num_attempt_1, num_attempt_2 or f_iter."
-            )
-
     def spin(
         self,
         R_max_eq=None,
@@ -3626,7 +3616,7 @@ class ParticlePlanet:
         The material ID of each particle. (See the README.md documentation.)
     """
 
-    def __init__(self, planet, N_particles, N_ngb=48, verbosity=1):
+    def __init__(self, planet, N_particles, N_ngb=48,tuner=None,A1_more_shells=None,force_num_shell=None, verbosity=1):
         self.N_particles = N_particles
         self.N_ngb = N_ngb
 
@@ -3634,7 +3624,7 @@ class ParticlePlanet:
 
         utils.load_eos_tables(planet.A1_mat_layer)
 
-        if not hasattr(planet, "period") or planet.period in [None, 0, np.nan]:
+        if not hasattr(planet, "period"):
             particles = seagen.GenSphere(
                 self.N_particles,
                 planet.A1_r[1:],
@@ -3643,9 +3633,13 @@ class ParticlePlanet:
                 planet.A1_u[1:],
                 planet.A1_T[1:],
                 planet.A1_P[1:],
+                A1_force_more_shells=A1_more_shells,
+                tuner=tuner,
+                force_num_shell=force_num_shell,
                 verbosity=verbosity,
             )
 
+            self.particles = particles
             self.A1_x = particles.A1_x
             self.A1_y = particles.A1_y
             self.A1_z = particles.A1_z
@@ -3659,6 +3653,8 @@ class ParticlePlanet:
             self.A1_P = particles.A1_P
             self.A1_mat_id = particles.A1_mat
             self.A1_id = np.arange(self.A1_m.shape[0])
+            XY = np.hypot(self.A1_x, self.A1_y)
+            self.R = np.hypot(XY,self.A1_z)
 
             # Smoothing lengths, crudely estimated from the densities
             w_edge = 2  # r/h at which the kernel goes to zero
@@ -3667,7 +3663,9 @@ class ParticlePlanet:
             )
 
             self.N_particles = particles.A1_x.shape[0]
-        else:
+
+        if hasattr(planet, "period"):
+
             (
                 self.A1_x,
                 self.A1_y,
@@ -3728,7 +3726,7 @@ class ParticlePlanet:
         for mat_id, s in zip(A1_mat_id, A1_s_mat):
             self.A1_s[self.A1_mat_id == mat_id] = s
 
-    def calculate_entropies(self):
+    def calculate_entropies(self,useU=False):
         """
         Calculate the particles' specific entropies from their densities and
         temperatures.
@@ -3743,14 +3741,18 @@ class ParticlePlanet:
         A1_s : [float]
             The specific entropy of each particle (J K^-1 kg^-1).
         """
-        self.A1_s = eos.A1_s_rho_T(self.A1_rho, self.A1_T, self.A1_mat_id)
-
+        if useU:
+            self.A1_s = eos.A1_s_u_rho(self.A1_u, self.A1_rho, self.A1_mat_id)
+        else:
+            self.A1_s = eos.A1_s_rho_T(self.A1_rho, self.A1_T, self.A1_mat_id)
+    
     def save(
         self,
         filename,
         boxsize=0,
         file_to_SI=utils.SI_to_SI,
         do_entropies=False,
+        useU=False,
         verbosity=1,
     ):
         """Save the particle configuration to an HDF5 file.
@@ -3784,7 +3786,7 @@ class ParticlePlanet:
         if do_entropies:
             # Calculate the entropies if not already set
             if not hasattr(self, "A1_s"):
-                self.calculate_entropies()
+                self.calculate_entropies(useU=useU)
             A1_s = self.A1_s
         else:
             A1_s = None

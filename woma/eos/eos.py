@@ -568,6 +568,9 @@ def s_rho_T(rho, T, mat_id):
     mat_type = mat_id // gv.type_factor
     if mat_type in [gv.type_SESAME, gv.type_ANEOS]:
         s = sesame.s_rho_T(rho, T, mat_id)
+    elif mat_id==200:
+        #print('set HM80 HHe entropy to zero')
+        raise ValueError("Please use U to compute the entropy if HM80 HHe involved.")
     else:
         raise ValueError("Entropy not implemented for this material type.")
     return s
@@ -632,6 +635,10 @@ def s_u_rho(u, rho, mat_id):
     mat_type = mat_id // gv.type_factor
     if mat_type in [gv.type_SESAME, gv.type_ANEOS]:
         s = sesame.s_u_rho(u, rho, mat_id)
+    elif mat_id==0:
+        s = idg.s_u_rho(u, rho, mat_id)
+    elif mat_id==200:
+        s = u # if HM80 HHe, the set the entropy to be the internal energy
     else:
         raise ValueError("Entropy not implemented for this material type.")
     return s
@@ -777,12 +784,12 @@ def find_rho(P_des, mat_id, T_rho_type, T_rho_args, rho_min, rho_max):
         return rho_max
     else:
         # For debugging
-        # print(P_des)
-        # print(mat_id)
-        # print(T_rho_type, T_rho_args)
-        # print(rho_min, rho_max)
-        # print(T_min, T_max)
-        # print(P_min, P_max)
+        print('P_des:',P_des)
+        print('mat_id:',mat_id)
+        print('T_rho_type_args',T_rho_type, T_rho_args)
+        print('rho_min_max',rho_min, rho_max)
+        print('T_min_max',T_min, T_max)
+        print('P_min_max',P_min, P_max)
         e = "Critical error in find_rho."
         raise ValueError(e)
 
