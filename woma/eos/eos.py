@@ -639,6 +639,10 @@ def s_u_rho(u, rho, mat_id):
         s = idg.s_u_rho(u, rho, mat_id)
     elif mat_id==200:
         s = u # if HM80 HHe, the set the entropy to be the internal energy
+    elif mat_id==201:
+        s = u # if HM80 ice, the set the entropy to be the internal energy
+    elif mat_id==102:
+        s = u # if Tillotsen water, the set the entropy to be the internal energy
     else:
         raise ValueError("Entropy not implemented for this material type.")
     return s

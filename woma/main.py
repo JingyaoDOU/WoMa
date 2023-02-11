@@ -531,7 +531,11 @@ class Planet:
 
     def calculate_entropies(self,useU=False):
         if useU:
-            self.A1_s = eos.A1_s_u_rho(self.A1_u, self.A1_rho, self.A1_mat_id)
+            self.A1_s = np.zeros(len(self.A1_mat_id))
+            noS_ids = np.array([102,201,200])
+            self.A1_s[np.isin(self.A1_mat_id,noS_ids)] = eos.A1_s_u_rho(self.A1_u[np.isin(self.A1_mat_id,noS_ids)], self.A1_rho[np.isin(self.A1_mat_id,noS_ids)], self.A1_mat_id[np.isin(self.A1_mat_id,noS_ids)]) 
+            sel = np.invert(np.isin(self.A1_mat_id,noS_ids))
+            self.A1_s[sel] = eos.A1_s_rho_T(self.A1_rho[sel], self.A1_T[sel], self.A1_mat_id[sel])
         else:
             self.A1_s = eos.A1_s_rho_T(self.A1_rho, self.A1_T, self.A1_mat_id)
             
@@ -3742,7 +3746,11 @@ class ParticlePlanet:
             The specific entropy of each particle (J K^-1 kg^-1).
         """
         if useU:
-            self.A1_s = eos.A1_s_u_rho(self.A1_u, self.A1_rho, self.A1_mat_id)
+            self.A1_s = np.zeros(len(self.A1_mat_id))
+            noS_ids = np.array([102,201,200])
+            self.A1_s[np.isin(self.A1_mat_id,noS_ids)] = eos.A1_s_u_rho(self.A1_u[np.isin(self.A1_mat_id,noS_ids)], self.A1_rho[np.isin(self.A1_mat_id,noS_ids)], self.A1_mat_id[np.isin(self.A1_mat_id,noS_ids)]) 
+            sel = np.invert(np.isin(self.A1_mat_id,noS_ids))
+            self.A1_s[sel] = eos.A1_s_rho_T(self.A1_rho[sel], self.A1_T[sel], self.A1_mat_id[sel])
         else:
             self.A1_s = eos.A1_s_rho_T(self.A1_rho, self.A1_T, self.A1_mat_id)
     
