@@ -426,7 +426,7 @@ class Planet:
             grp = f.create_group("/planet")
             # Attributes
             grp.attrs[io.Di_hdf5_planet_label["num_layer"]] = self.num_layer
-            grp.attrs[io.Di_hdf5_planet_label["mat_layer"]] = self.A1_mat_layer
+            grp.attrs[io.Di_hdf5_planet_label["mat_layer"]] = self.A1_mat_layer.astype('S')
             grp.attrs[io.Di_hdf5_planet_label["mat_id_layer"]] = self.A1_mat_id_layer
             grp.attrs[io.Di_hdf5_planet_label["T_rho_type"]] = self.A1_T_rho_type
             grp.attrs[io.Di_hdf5_planet_label["T_rho_type_id"]] = self.A1_T_rho_type_id
