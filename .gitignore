@@ -20,7 +20,7 @@
 *.zip
 *.*#
 *~
-
+woma/data/*
 .ipynb_checkpoints/
 build/
 dist/
