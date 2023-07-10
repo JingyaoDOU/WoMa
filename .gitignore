@@ -20,7 +20,8 @@
 *.zip
 *.*#
 *~
-woma/data/*
+/woma/data/*
+./woma/data/
 /user/home/qb20321/hammer/.conda/envs/testenv/lib/python3.8/site-packages/WoMa/woma/data/
 .ipynb_checkpoints/
 build/
