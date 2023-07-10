@@ -20,7 +20,7 @@ from gadget import Snapshot
 Di_hdf5_planet_label = {
     # Attributes
     "num_layer": "Number of Layers",
-    "mat_layer": "Layer Materials",
+    #"mat_layer": "Layer Materials",
     "mat_id_layer": "Layer Material IDs",
     "T_rho_type": "Layer T-rho Type",
     "T_rho_type_id": "Layer T-rho Type ID",
