@@ -27,3 +27,4 @@
 build/
 dist/
 woma.egg-info/
+woma/data
