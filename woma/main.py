@@ -426,7 +426,7 @@ class Planet:
             grp = f.create_group("/planet")
             # Attributes
             grp.attrs[io.Di_hdf5_planet_label["num_layer"]] = self.num_layer
-            grp.attrs[io.Di_hdf5_planet_label["mat_layer"]] = np.array(self.A1_mat_layer).astype('S')
+            grp.attrs[io.Di_hdf5_planet_label["mat_layer"]] = self.A1_mat_layer
             grp.attrs[io.Di_hdf5_planet_label["mat_id_layer"]] = self.A1_mat_id_layer
             grp.attrs[io.Di_hdf5_planet_label["T_rho_type"]] = self.A1_T_rho_type
             grp.attrs[io.Di_hdf5_planet_label["T_rho_type_id"]] = self.A1_T_rho_type_id
@@ -3747,7 +3747,7 @@ class ParticlePlanet:
         """
         if useU:
             self.A1_s = np.zeros(len(self.A1_mat_id))
-            noS_ids = np.array([0,102,201,200])
+            noS_ids = np.array([0,100,101,102,103,201,200])
             self.A1_s[np.isin(self.A1_mat_id,noS_ids)] = eos.A1_s_u_rho(self.A1_u[np.isin(self.A1_mat_id,noS_ids)], self.A1_rho[np.isin(self.A1_mat_id,noS_ids)], self.A1_mat_id[np.isin(self.A1_mat_id,noS_ids)]) 
             sel = np.invert(np.isin(self.A1_mat_id,noS_ids))
             self.A1_s[sel] = eos.A1_s_rho_T(self.A1_rho[sel], self.A1_T[sel], self.A1_mat_id[sel])

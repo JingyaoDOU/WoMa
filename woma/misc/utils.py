@@ -705,11 +705,11 @@ def load_eos_tables(A1_mat_input=None):
         A1_mat = list(A1_mat_input.copy())
     # Discard idg materials
     A1_idg = []
-    for material in A1_mat:
-        if material.startswith("idg"):
-            A1_idg.append(material)
-    for material in A1_idg:
-        A1_mat.remove(material)
+   # for material in A1_mat:
+    #    if material.startswith("idg"):
+    #        A1_idg.append(material)
+    #for material in A1_idg:
+    #    A1_mat.remove(material)
 
     # Check A1_mat elements are available eos
     for material in A1_mat:

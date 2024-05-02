@@ -13,14 +13,14 @@ import sys
 from woma.misc import glob_vars as gv
 from woma.misc.utils import SI_to_SI, SI_to_cgs
 from woma.eos import eos
-from gadget import Snapshot
+#from gadget import Snapshot
 
 
 # HDF5 labels
 Di_hdf5_planet_label = {
     # Attributes
     "num_layer": "Number of Layers",
-    #"mat_layer": "Layer Materials",
+    "mat_layer": "Layer Materials",
     "mat_id_layer": "Layer Material IDs",
     "T_rho_type": "Layer T-rho Type",
     "T_rho_type_id": "Layer T-rho Type ID",
